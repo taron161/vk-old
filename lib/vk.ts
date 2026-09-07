@@ -12,13 +12,13 @@ export async function getAuthToken(): Promise<string | null> {
   try {
     const token = await vk.send('VKWebAppGetAuthToken', {
       app_id: APP_ID,
-      scope: 'friends,offline',
+      scope: 'friends,photos,video,wall,offline,status,groups',
     });
     savedToken = token.access_token;
     localStorage.setItem('vk_token', token.access_token);
     return savedToken;
   } catch (error) {
-    console.log('VK Bridge недоступен, используем OAuth');
+    console.log('VK Bridge недоступен');
     return null;
   }
 }
@@ -62,7 +62,7 @@ export function clearToken() {
   }
 }
 
-// Прямой OAuth редирект
+// OAuth редирект
 export function redirectToOAuth() {
   const redirectUri = window.location.origin;
   const scope = 'friends,photos,video,wall,offline,status,groups';

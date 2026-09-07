@@ -8,7 +8,7 @@ import MessagesTab from '@/components/tabs/MessagesTab';
 import FriendsTab from '@/components/tabs/FriendsTab';
 import MusicTab from '@/components/tabs/MusicTab';
 import VideoTab from '@/components/tabs/VideoTab';
-import { getTokenFromUrl, redirectToOAuth } from '@/lib/vk';
+import { getAuthToken, getTokenFromUrl, getSavedToken, redirectToOAuth } from '@/lib/vk';
 import { callVKAPIDirect } from '@/lib/vk-api';
 
 export default function Home() {
@@ -16,15 +16,44 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [isAuth, setIsAuth] = useState(false);
   const [showAuthButton, setShowAuthButton] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
+      setIsLoading(true);
+
+      // 1. Пробуем VK Bridge (если внутри Mini App)
+      const bridgeToken = await getAuthToken();
+      if (bridgeToken) {
+        localStorage.setItem('vk_token', bridgeToken);
+        const profile = await callVKAPIDirect('users.get', {
+          fields: 'photo_200,status,online',
+        });
+        if (profile?.[0]) {
+          setUser(profile[0]);
+          setIsAuth(true);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // 2. Проверяем токен из URL
       const urlToken = getTokenFromUrl();
       if (urlToken) {
         window.location.hash = '';
+        const profile = await callVKAPIDirect('users.get', {
+          fields: 'photo_200,status,online',
+        });
+        if (profile?.[0]) {
+          setUser(profile[0]);
+          setIsAuth(true);
+          setIsLoading(false);
+          return;
+        }
       }
 
-      const savedToken = localStorage.getItem('vk_token');
+      // 3. Проверяем сохраненный токен
+      const savedToken = getSavedToken();
       if (savedToken) {
         const profile = await callVKAPIDirect('users.get', {
           fields: 'photo_200,status,online',
@@ -32,17 +61,30 @@ export default function Home() {
         if (profile?.[0]) {
           setUser(profile[0]);
           setIsAuth(true);
+          setIsLoading(false);
           return;
         }
       }
 
+      // Нет авторизации — показываем кнопку
       setShowAuthButton(true);
+      setIsLoading(false);
     };
 
     initAuth();
   }, []);
 
-  if (showAuthButton && !isAuth) {
+  // Экран загрузки
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
+        <p className="text-gray-500">Загрузка...</p>
+      </div>
+    );
+  }
+
+  // Экран авторизации
+  if (!isAuth) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
         <div className="text-center">
@@ -50,7 +92,7 @@ export default function Home() {
           <p className="text-gray-500 mb-4">Войдите через VK</p>
           <button
             onClick={redirectToOAuth}
-            className="bg-[#4a76a8] text-white px-6 py-2 rounded hover:bg-blue-600"
+            className="bg-[#4a76a8] text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors"
           >
             Войти через VK
           </button>
@@ -59,14 +101,7 @@ export default function Home() {
     );
   }
 
-  if (!isAuth) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
-        <p className="text-gray-500">Загрузка...</p>
-      </div>
-    );
-  }
-
+  // Основной интерфейс
   const renderTab = () => {
     switch (activeTab) {
       case 'profile':
