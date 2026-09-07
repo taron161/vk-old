@@ -5,7 +5,7 @@ export const vk = bridge;
 const APP_ID = 54757507;
 let savedToken: string | null = null;
 
-// Получить токен через VK Bridge (для Mini App)
+// Получить токен через VK Bridge
 export async function getAuthToken(): Promise<string | null> {
   if (savedToken) return savedToken;
 
@@ -18,25 +18,9 @@ export async function getAuthToken(): Promise<string | null> {
     localStorage.setItem('vk_token', token.access_token);
     return savedToken;
   } catch (error) {
-    console.log('VK Bridge недоступен');
+    console.error('Ошибка VK Bridge:', error);
     return null;
   }
-}
-
-// Получить токен из URL (после OAuth редиректа)
-export function getTokenFromUrl(): string | null {
-  if (typeof window === 'undefined') return null;
-  
-  const hash = window.location.hash;
-  const match = hash.match(/access_token=([^&]+)/);
-  
-  if (match) {
-    savedToken = match[1];
-    localStorage.setItem('vk_token', match[1]);
-    return match[1];
-  }
-  
-  return null;
 }
 
 // Получить сохраненный токен
@@ -60,14 +44,6 @@ export function clearToken() {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('vk_token');
   }
-}
-
-// OAuth редирект
-export function redirectToOAuth() {
-  const redirectUri = window.location.origin;
-  const scope = 'friends,photos,video,wall,offline,status,groups';
-  const authUrl = `https://oauth.vk.com/authorize?client_id=${APP_ID}&display=popup&redirect_uri=${redirectUri}&scope=${scope}&response_type=token&v=5.131`;
-  window.location.href = authUrl;
 }
 
 export { APP_ID };
