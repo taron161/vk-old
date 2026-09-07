@@ -65,8 +65,8 @@ export function clearToken() {
 // Прямой OAuth редирект
 export function redirectToOAuth() {
   const redirectUri = window.location.origin;
-  const scope = 'friends,photos,audio,video,wall,messages,offline,status,groups';
-  const authUrl = `https://oauth.vk.com/authorize?client_id=${APP_ID}&display=page&redirect_uri=${redirectUri}&scope=${scope}&response_type=token&v=5.131`;
+  const scope = 'friends,photos,video,wall,offline,status,groups';
+  const authUrl = `https://oauth.vk.com/authorize?client_id=${APP_ID}&display=popup&redirect_uri=${redirectUri}&scope=${scope}&response_type=token&v=5.131`;
   window.location.href = authUrl;
 }
 
