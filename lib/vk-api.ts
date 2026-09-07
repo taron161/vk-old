@@ -1,5 +1,12 @@
 export async function callVKAPIDirect(method: string, params: any = {}) {
+  // Сначала пробуем пользовательский токен
+  const userToken = localStorage.getItem('vk_token');
+  
   params.method = method;
+  
+  if (userToken) {
+    params.user_token = userToken;
+  }
 
   const queryString = Object.entries(params)
     .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
