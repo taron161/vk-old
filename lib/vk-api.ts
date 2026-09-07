@@ -1,4 +1,3 @@
-// Прямые вызовы VK API без VK Bridge
 export async function callVKAPIDirect(method: string, params: any = {}) {
   const token = localStorage.getItem('vk_token');
   if (!token) return null;
@@ -13,6 +12,15 @@ export async function callVKAPIDirect(method: string, params: any = {}) {
   try {
     const response = await fetch(`https://api.vk.com/method/${method}?${queryString}`);
     const data = await response.json();
+    
+    if (data.error) {
+      console.error('VK API ошибка:', data.error);
+      if (data.error.error_code === 5) {
+        localStorage.removeItem('vk_token');
+      }
+      return null;
+    }
+    
     return data.response;
   } catch (error) {
     console.error('Ошибка VK API:', error);
