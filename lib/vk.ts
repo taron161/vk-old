@@ -12,7 +12,7 @@ export async function getAuthToken(): Promise<string | null> {
   try {
     const token = await vk.send('VKWebAppGetAuthToken', {
       app_id: APP_ID,
-      scope: 'friends,photos,audio,video,wall,messages,offline,status,groups',
+      scope: 'friends,offline',
     });
     savedToken = token.access_token;
     localStorage.setItem('vk_token', token.access_token);
