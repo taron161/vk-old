@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
     }
   });
 
-  // Используем пользовательский токен если есть, иначе сервисный
   params.access_token = userToken || SERVICE_KEY;
   params.v = '5.131';
 

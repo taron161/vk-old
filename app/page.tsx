@@ -17,9 +17,8 @@ export default function Home() {
 
   useEffect(() => {
     const loadUser = async () => {
-      // Пробуем получить текущего пользователя
+      // Пробуем получить текущего пользователя без user_ids
       const profile = await callVKAPIDirect('users.get', {
-        user_ids: '728799672', // ID из консоли VK
         fields: 'photo_200,status,online',
       });
       
